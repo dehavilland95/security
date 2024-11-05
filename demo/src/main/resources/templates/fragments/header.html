@@ -1,0 +1,6 @@
+<div th:fragment="header">
+    <form th:method="POST" th:action="@{/logout}">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        <button id='logoutButton' type="submit">Logout</button>
+    </form>
+</div>

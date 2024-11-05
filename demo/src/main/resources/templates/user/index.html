@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User</title>
+</head>
+<body>
+<tr>
+    <td><span th:text="${myInfo.getFirstName() + ' ' + myInfo.getLastName()}"></span></td>
+    <td th:text="${myInfo.getEmail()}"></td>
+    <td th:text="${myInfo.getAge()}"></td>
+</tr>
+</body>
+</html>
