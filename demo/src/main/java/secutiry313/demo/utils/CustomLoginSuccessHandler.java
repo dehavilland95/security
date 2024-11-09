@@ -14,17 +14,15 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        // Логика обработки успешного входа
         String redirectUrl = determineTargetUrl(authentication);
-        response.sendRedirect(redirectUrl); // Перенаправление на нужную страницу
+        response.sendRedirect(redirectUrl);
     }
     private String determineTargetUrl(Authentication authentication) {
-        // Ваша логика для определения целевого URL в зависимости от ролей пользователя
         if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            return "/admin"; // Перенаправление на страницу администратора
+            return "/admin";
         } else {
-            return "/user"; // Перенаправление для остальных пользователей
+            return "/user";
         }
     }
 }

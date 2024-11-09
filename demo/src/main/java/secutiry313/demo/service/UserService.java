@@ -9,11 +9,9 @@ import java.util.List;
 
 public interface UserService {
     UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
-    User findUserById(Long userId);
-    void updateUser(User user, String[] roleNames);
+    User findById(Long userId);
+    void update(User user, String[] roleNames);
     List<User> getAll();
-    boolean saveUser(User user, String[] roleNames);
-    boolean deleteUser(Long userId);
-    List<Role> getAllRoles();
-
+    boolean save(User user, String[] roleNames);
+    void delete(Long userId);
 }

@@ -1,7 +1,5 @@
 package secutiry313.demo.service;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,8 +16,6 @@ import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserDetailsService, UserService {
-    @PersistenceContext
-    private EntityManager em;
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -28,25 +24,22 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     PasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username);
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
         return user;
     }
 
-    @Transactional
-    public User findUserById(Long userId) {
+    @Transactional(readOnly = true)
+    public User findById(Long userId) {
         Optional<User> userFromDb = userRepository.findById(userId);
         return userFromDb.orElse(new User());
     }
 
-    @Transactional
-    public void updateUser(User user, String[] roleNames) {
-        System.out.println();
-        User userToUpdate = em.find(User.class, user.getId());
+    private Set<Role> createRolesSet(String[] roleNames){
         Set<Role> roles = new HashSet<>();
         for (String roleName : roleNames) {
             Role role = roleRepository.findByName(roleName);
@@ -54,50 +47,34 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 roles.add(role);
             }
         }
-        userToUpdate.setFirstName(user.getFirstName());
-        userToUpdate.setLastName(user.getLastName());
-        userToUpdate.setEmail(user.getEmail());
-        userToUpdate.setAge(user.getAge());
-        userToUpdate.setRoles(roles);
-        userRepository.save(userToUpdate);
+        return roles;
     }
 
     @Transactional
+    public void update(User user, String[] roleNames) {
+        user.setRoles(createRolesSet(roleNames));
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
     public List<User> getAll() {
         return userRepository.findAll();
     }
 
     @Transactional
-    public boolean saveUser(User user, String[] roleNames) {
+    public boolean save(User user, String[] roleNames) {
         User userFromDB = userRepository.findByEmail(user.getEmail());
-
         if (userFromDB != null) {
             return false;
         }
-        Set<Role> roles = new HashSet<>();
-        for (String roleName : roleNames) {
-            Role role = roleRepository.findByName(roleName);
-            if (role != null) {
-                roles.add(role);
-            }
-        }
-        user.setRoles(roles);
+        user.setRoles(createRolesSet(roleNames));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return true;
     }
 
     @Transactional
-    public boolean deleteUser(Long userId) {
-        if (userRepository.findById(userId).isPresent()) {
-            userRepository.deleteById(userId);
-            return true;
-        }
-        return false;
-    }
-
-    @Transactional
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public void delete(Long userId) {
+        userRepository.deleteById(userId);
     }
 }

@@ -9,8 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import secutiry313.demo.models.Role;
 import secutiry313.demo.models.User;
+import secutiry313.demo.service.RoleService;
 import secutiry313.demo.service.UserService;
-
 import java.util.List;
 
 @Controller
@@ -18,14 +18,16 @@ import java.util.List;
 public class AdminController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
 
     @GetMapping()
     public String index(Model model) {
         List<User> users = userService.getAll();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        UserDetails user = userService.loadUserByUsername(email);
-        List<Role> roles = userService.getAllRoles();
+        String username = authentication.getName();
+        UserDetails user = userService.loadUserByUsername(username);
+        List<Role> roles = roleService.getAll();
         model.addAttribute("allRoles", roles);
         if(user != null) {
             model.addAttribute("myInfo", (User) user);
@@ -38,45 +40,41 @@ public class AdminController {
     public String show(
             @RequestParam(name = "id", required = false, defaultValue = "0") long id,
             Model model){
-        model.addAttribute("user", userService.findUserById(id));
+        User user = userService.findById(id);
+        model.addAttribute("user", user);
         return "admin/show";
     }
     @GetMapping("/new")
     public String newUser(Model model){
-        List<Role> roles = userService.getAllRoles();
+        List<Role> roles = roleService.getAll();
         model.addAttribute("roles", roles);
         model.addAttribute("user", new User());
         return "admin/new";
     }
     @PostMapping()
     public String create(@ModelAttribute("user") User user,  @RequestParam(required = false) String[] usersRoles){
-        System.out.println();
-        userService.saveUser(user, usersRoles);
+        userService.save(user, usersRoles);
         return "redirect:/admin";
     }
     @GetMapping(value = "/edit", params = "id")
     public String edit(
             @RequestParam(name = "id", required = false, defaultValue = "0") long id,
             Model model){
-        List<Role> roles = userService.getAllRoles();
+        List<Role> roles = roleService.getAll();
         model.addAttribute("allRoles", roles);
-        model.addAttribute("user", userService.findUserById(id));
+        model.addAttribute("user", userService.findById(id));
         return "admin/edit";
     }
     @PatchMapping()
     public String update(
-            @RequestParam(name = "id", required = false, defaultValue = "0") long id,
             @ModelAttribute("user") User user,
             @RequestParam(required = false) String[] usersRoles){
-        System.out.println();
-        user.setId(id);
-        userService.updateUser(user, usersRoles);
+        userService.update(user, usersRoles);
         return "redirect:/admin";
     }
     @DeleteMapping(params = "id")
     public String delete(@RequestParam(name = "id", required = false, defaultValue = "0") long id){
-        System.out.println();
-        userService.deleteUser(id);
+        userService.delete(id);
         return "redirect:/admin";
     }
 }

@@ -18,27 +18,17 @@ public class UserDaoImpl implements UserDao {
     }
 
     public User findById(long id) {
-        TypedQuery<User> query = entityManager.createQuery(
-                "SELECT u FROM User u WHERE u.id = :id", User.class);
-        User user =  query.setParameter("id", id)
-                .getSingleResult();
-        System.out.println(user);
-        return user;
+        return entityManager.find(User.class, id);
     }
 
     public void save(User user) {
         entityManager.persist(user);
     }
+
     public void update(User user) {
-        User userToBeUpdate = findById(user.getId());
-        if(userToBeUpdate != null) {
-            userToBeUpdate.setFirstName(user.getFirstName());
-            userToBeUpdate.setLastName(user.getLastName());
-            userToBeUpdate.setEmail(user.getEmail());
-            userToBeUpdate.setAge(user.getAge());
-            entityManager.merge(userToBeUpdate);
-        }
+        entityManager.merge(user);
     }
+
     public void delete(long id) {
         entityManager.remove(findById(id));
     }
